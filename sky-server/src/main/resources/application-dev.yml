@@ -12,3 +12,9 @@ sky:
     access-key-id: LTAI5tJw3ympz6LepGUqpyNn
     access-key-secret: C71rBAnW42cKGcHKbKIhTjvZNnr4rR
     bucket-name: wyz669
+
+  redis:
+    host: localhost
+    port: 6379
+    password: 123456
+    database: 10

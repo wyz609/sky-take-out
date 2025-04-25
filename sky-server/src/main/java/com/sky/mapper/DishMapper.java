@@ -13,7 +13,7 @@ import org.apache.ibatis.annotations.Select;
 @Mapper
 public interface DishMapper {
 
-    @AutoFill(OperationType.INSERT)
+    @AutoFill(OperationType.UPDATE)
     void update(Dish dish);
 
     /**
