@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Api(tags = "店铺相关接口")
 public class ShopController {
 
-    public static final String KEY = "KEY_STATUS";
+    public static final String KEY = "SHOP_STATUS";
 
     @Autowired
     private RedisTemplate redisTemplate;
