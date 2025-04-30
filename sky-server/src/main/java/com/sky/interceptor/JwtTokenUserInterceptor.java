@@ -43,7 +43,7 @@ public class JwtTokenUserInterceptor implements HandlerInterceptor {
      * @return
      * @throws Exception
      */
-    public boolean perHandle(HttpServletRequest request, HttpServletResponse response,Object handler) throws Exception {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response,Object handler) throws Exception {
 
         // 判断当前拦截到的是Controller的方法还是其他的资源
         if(!(handler instanceof HandlerMethod)){
