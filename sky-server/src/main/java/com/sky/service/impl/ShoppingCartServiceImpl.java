@@ -40,6 +40,31 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     private SetmealMapper  setmealMapper;
 
     @Override
+    public void deleteShoppingCart(ShoppingCartDTO shoppingCartDTO) {
+        ShoppingCart shoppingCart = new ShoppingCart();
+        BeanUtils.copyProperties(shoppingCartDTO, shoppingCart);
+
+        shoppingCart.setUserId(BaseContext.getCurrentId());
+        List<ShoppingCart> list = shoppingCartMapper.list(shoppingCart);
+
+        // 判断购物车中是否有数据
+        if(list != null && list.size() > 0) {
+            shoppingCart = list.get(0);
+            Integer number = shoppingCart.getNumber();
+            // 判断当前购物车菜品的数量，如果只有一个则直接从数据库中删除
+            if(number == 1){
+                shoppingCartMapper.deleteByUserId(shoppingCart.getUserId());
+                //
+            }else{
+                shoppingCart.setNumber(number - 1);
+                shoppingCartMapper.updateNumberById(shoppingCart);
+            }
+        }
+
+
+    }
+
+    @Override
     @Transactional
     public void addShoppingCart(ShoppingCartDTO shoppingCartDTO) {
         ShoppingCart shoppingCart = new ShoppingCart();
