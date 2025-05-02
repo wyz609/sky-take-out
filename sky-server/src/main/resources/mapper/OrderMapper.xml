@@ -20,7 +20,7 @@
             <if test="rejectionReason != null and rejectionReason != ''">
                 rejection_reason = #{rejectionReason},
             </if>
-            <if test="cancelTime != null and cancelTime != ''">
+            <if test="cancelTime != null">
                 cancel_time = #{cancelTime},
             </if>
             <if test="payStatus != null and payStatus != ''" >

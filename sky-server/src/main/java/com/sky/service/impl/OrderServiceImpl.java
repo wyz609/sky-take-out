@@ -118,7 +118,6 @@ public class OrderServiceImpl implements OrderService {
                 .orderAmount(order.getAmount())
                 .orderTime(order.getOrderTime())
                 .build();
-
         return orderSubmitVO;
     }
 
@@ -176,6 +175,7 @@ public class OrderServiceImpl implements OrderService {
 
         // 更新数据库中的数据状态
         orderMapper.update(orders);
+
     }
 }
 
