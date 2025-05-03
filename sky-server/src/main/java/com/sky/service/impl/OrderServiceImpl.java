@@ -20,6 +20,7 @@ import com.sky.result.PageResult;
 import com.sky.service.OrderService;
 import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.OrderPaymentVO;
+import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
 import lombok.extern.slf4j.Slf4j;
@@ -337,7 +338,33 @@ public class OrderServiceImpl implements OrderService {
         return new PageResult(page.getTotal(),orderVOList);
     }
 
-// 根据分页对象获取订单VO列表
+    /**
+     * 各个状态的订单数量统计
+     * @return
+     */
+    @Override
+    public OrderStatisticsVO statistics() {
+
+        // 统计待确认订单数量
+        Integer toBeConfirmed = orderMapper.countStatus(Orders.TO_BE_CONFIRMED);
+        // 统计已确认订单数量
+        Integer confirmed =  orderMapper.countStatus(Orders.CONFIRMED);
+        // 统计配送中订单数量
+        Integer deliveryInProgress = orderMapper.countStatus(Orders.DELIVERY_IN_PROGRESS);
+
+        // 创建订单统计对象
+        OrderStatisticsVO orderStatisticsVO = new OrderStatisticsVO();
+        // 设置已确认订单数量
+        orderStatisticsVO.setConfirmed(confirmed);
+        // 设置待确认订单数量
+        orderStatisticsVO.setToBeConfirmed(toBeConfirmed);
+        // 设置配送中订单数量
+        orderStatisticsVO.setDeliveryInProgress(deliveryInProgress);
+
+        return orderStatisticsVO;
+    }
+
+    // 根据分页对象获取订单VO列表
     private List<OrderVO> getOrderVOList(Page<Orders> page) {
         // 创建订单VO列表
         List<OrderVO> orderOVList = new ArrayList<>();
