@@ -457,7 +457,6 @@ public class OrderServiceImpl implements OrderService {
      * 派送订单
      * @param id
      */
-
     @Override
     public void delivery(Long id) {
         // 根据id获取订单信息
@@ -476,6 +475,35 @@ public class OrderServiceImpl implements OrderService {
         orders.setStatus(Orders.DELIVERY_IN_PROGRESS);
         // 更新订单信息
         orderMapper.update(orders);
+    }
+
+    /**
+     * 完成订单
+     * @param id
+     */
+    @Override
+    public void complete(Long id) {
+        // 根据id获取订单信息
+        Orders ordersDB = orderMapper.getById(id);
+
+        // 如果订单不存在或者订单状态不是正在配送，则抛出异常
+        if(ordersDB == null && !ordersDB.getStatus().equals(Orders.DELIVERY_IN_PROGRESS)){
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+        // 创建新的订单对象
+        Orders orders = new Orders();
+        // 设置订单id
+        orders.setId(ordersDB.getId());
+        // 设置订单状态为已完成
+        orders.setStatus(Orders.COMPLETED);
+        // 设置订单完成时间
+        orders.setDeliveryTime(LocalDateTime.now());
+
+        // 更新订单信息
+        orderMapper.update(orders);
+
+
     }
 
     // 根据分页对象获取订单VO列表

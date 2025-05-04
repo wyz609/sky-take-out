@@ -201,5 +201,22 @@ public class DishServiceImpl implements DishService {
         return dishVOList;
     }
 
+    /**
+     * 根据分类id查询菜品
+     * @param categoryId
+     * @return
+     */
+    @Override
+    public List<Dish> list(Long categoryId) {
+        // 创建一个Dish对象，设置categoryId和status属性
+        Dish dish = Dish.builder()
+                .categoryId(categoryId)
+                .status(StatusConstant.ENABLE)
+                .build();
+
+        // 调用dishMapper的list方法，传入Dish对象，返回符合条件的Dish列表
+        return dishMapper.list(dish);
+    }
+
 }
 
