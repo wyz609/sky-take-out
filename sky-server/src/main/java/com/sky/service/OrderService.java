@@ -94,4 +94,15 @@ public interface OrderService {
      */
     void rejection(OrdersRejectionDTO ordersRejectionDTO);
 
+    /**
+     * 订单取消
+     * @param ordersCancelDTO
+     */
+    void cancel(OrdersCancelDTO ordersCancelDTO);
+
+    /**
+     * 订单派送
+     * @param id
+     */
+    void delivery(Long id);
 }

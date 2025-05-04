@@ -415,6 +415,69 @@ public class OrderServiceImpl implements OrderService {
 
     }
 
+    /**
+     * 取消订单
+     * @param ordersCancelDTO
+     */
+    @Override
+    public void cancel(OrdersCancelDTO ordersCancelDTO) {
+        // 根据id查询订单
+        Orders ordersDB = orderMapper.getById(ordersCancelDTO.getId());
+
+        Integer payStatus = ordersDB.getPayStatus();
+
+        Orders orders = new Orders();
+        if(payStatus == 1){
+            //            //用户已支付，需要退款
+//            String refund = weChatPayUtil.refund(
+//                    ordersDB.getNumber(),
+//                    ordersDB.getNumber(),
+//                    new BigDecimal(0.01),
+//                    new BigDecimal(0.01));
+//            log.info("申请退款：{}", refund);
+
+
+            // 管理端取消订单需要退款，根据订单id更新订单状态、取消原因、取消时间
+            // 设置订单id
+            orders.setId(ordersDB.getId());
+            // 设置订单状态为已取消
+            orders.setStatus(Orders.CANCELLED);
+            // 设置取消原因
+            orders.setCancelReason(ordersCancelDTO.getCancelReason());
+            // 设置取消时间
+            orders.setCancelTime(LocalDateTime.now());
+        }
+
+        // 更新订单
+        orderMapper.update(orders);
+
+    }
+
+    /**
+     * 派送订单
+     * @param id
+     */
+
+    @Override
+    public void delivery(Long id) {
+        // 根据id获取订单信息
+        Orders ordersDB = orderMapper.getById(id);
+
+        // 如果订单不存在或者订单状态不是已确认，则抛出异常
+        if(ordersDB == null && !ordersDB.getStatus().equals(Orders.CONFIRMED)){
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+
+        // 创建新的订单对象
+        Orders orders = new Orders();
+        // 设置订单id
+        orders.setId(ordersDB.getId());
+        // 更新订单状态， 状态转换为派送中
+        orders.setStatus(Orders.DELIVERY_IN_PROGRESS);
+        // 更新订单信息
+        orderMapper.update(orders);
+    }
+
     // 根据分页对象获取订单VO列表
     private List<OrderVO> getOrderVOList(Page<Orders> page) {
         // 创建订单VO列表
