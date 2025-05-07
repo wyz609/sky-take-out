@@ -112,8 +112,11 @@ public class SetmealServiceImpl implements SetmealService {
     @Override
     public PageResult pageQuery(SetmealPageQueryDTO setmealPageQueryDTO) {
 
+        // 使用PageHelper插件进行分页查询
         PageHelper.startPage(setmealPageQueryDTO.getPage(), setmealPageQueryDTO.getPageSize());
+        // 调用Mapper接口进行分页查询
         Page<SetmealVO> page = setmealMapper.pageQuery(setmealPageQueryDTO);
+        // 返回分页结果
         return new PageResult(page.getTotal(),page.getResult());
     }
 
@@ -123,19 +126,27 @@ public class SetmealServiceImpl implements SetmealService {
      */
     @Override
     public void deleteBatch(List<Long> ids) {
-        ids.forEach(id ->{
+        //判断当前套餐是否能够删除---是否存在起售中的套餐？？
+        //思路：遍历获取传入的id，根据id查询套餐setmeal中的status字段，0 停售 1 起售，
+        //    如果是1代表是起售状态不能删除
+        ids.forEach(id -> {
             Setmeal setmeal = setmealMapper.getById(id);
             if(StatusConstant.ENABLE == setmeal.getStatus()){
+                //起售中的套餐不能删除
                 throw new DeletionNotAllowedException(MessageConstant.SETMEAL_ON_SALE);
             }
         });
 
-        ids.forEach(id ->{
-            // 删除套餐表中的数据
-            setmealMapper.deleteById(id);
-            // 删除套餐餐品关系比啊中的数据
-            setmealDishMapper.deleteBySetmealId(id);
+
+        //思路：套餐表和菜品表是多对多关系，把整个套餐都删除了，那么关系表中保存的套餐对应
+        //     的菜品关系就没有意义了，所以此时也应该删除关系表中的数据。
+        ids.forEach(setmealId -> {
+            //删除套餐表中的数据
+            setmealMapper.deleteById(setmealId);
+            //删除套餐菜品关系表中的数据
+            setmealDishMapper.deleteBySetmealId(setmealId);
         });
+
     }
 
     /**
