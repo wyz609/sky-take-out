@@ -61,8 +61,8 @@ public interface OrderMapper {
 
     /**
      * 根据状态统计订单数量
-     * @param status
-     * @return
+     * @param status 订单状态
+     * @return 返回订单数量
      */
     @Select("select count(id) from orders where status = #{status}")
     Integer countStatus(Integer status);

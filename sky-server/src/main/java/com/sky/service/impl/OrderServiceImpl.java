@@ -540,6 +540,26 @@ public class OrderServiceImpl implements OrderService {
 
     }
 
+    /**
+     * 用户催单
+     * @param id
+     */
+    @Override
+    public void reminder(Long id) {
+        // 根据id获取订单信息 查看订单是否存在
+        Orders order = orderMapper.getById(id);
+        if(order == null){
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+        }
+
+        Map map = new HashMap<>();
+        map.put("type",2); // 消息类型，2表示催单
+        map.put("orderId",order.getId()); // 订单id
+        map.put("content","订单号:" + order.getNumber()); // 订单号
+        // 通过WebSocket实现催单提醒，向客户端浏览器推送消息
+        webSocketServer.sendToAllClient(JSON.toJSONString(map));
+    }
+
     // 根据分页对象获取订单VO列表
     private List<OrderVO> getOrderVOList(Page<Orders> page) {
         // 创建订单VO列表
