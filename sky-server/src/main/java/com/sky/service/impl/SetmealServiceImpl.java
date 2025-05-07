@@ -150,7 +150,7 @@ public class SetmealServiceImpl implements SetmealService {
     }
 
     /**
-     * 根据id查询套餐
+     * 根据id查询套餐和关联菜品数据
      * @param id
      * @return
      */
@@ -170,7 +170,14 @@ public class SetmealServiceImpl implements SetmealService {
 
     /**
      * 修改套餐
-     * @param setmealDTO
+     *
+     * 思路分析：
+     * 套餐表修改直接使用update即可，但是对于套餐菜品关系表，
+     * 套餐和菜品关系的修改会比较复杂， 因为它的情况比较多， 有可能没有修改，有可能关系是增加的
+     * 也有可能关系式删除了，那么这个地方我们有没有一种比较简单的处理方式呢？
+     * 可以先把当前的套餐菜品的关系数据全部删除，然后按照当前传过来的套餐菜品关系，重新再插入一次
+     *
+     * @param setmealDTO 套餐数据传输对象
      */
     @Override
     public void update(SetmealDTO setmealDTO) {
@@ -185,10 +192,15 @@ public class SetmealServiceImpl implements SetmealService {
         // 2.删除套餐和菜品的关联关系
         setmealDishMapper.deleteBySetmealId(setmealDTO.getId());
 
+        // 获取页面传来的套餐和彩屏关系数据
         List<SetmealDish> setmealDishes = setmealDTO.getSetmealDishes();
+        //遍历关系表数据，为关系表中的每一条数据(每一个对象)的setmealId赋值，
+        //   这个地方不需要像之前写新增菜品时多写个if判断，因为之前的口味数据是非必须的，
+        //   这个地方要求套餐必须包含菜品是必须的，所以不需要if判断，不存在套餐不包含菜品得情况
         setmealDishes.forEach(setmealDish ->setmealDish.setSetmealId(id));
 
         // 3.重新插入套餐和菜品的关联关系
+        // 动态SQL批量插入
         setmealDishMapper.insertBatch(setmealDishes);
 
     }

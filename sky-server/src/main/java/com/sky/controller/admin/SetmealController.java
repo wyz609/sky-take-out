@@ -12,17 +12,18 @@ package com.sky.controller.admin;
 
 import com.sky.dto.SetmealDTO;
 import com.sky.dto.SetmealPageQueryDTO;
-import com.sky.entity.Setmeal;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.SetmealService;
 import com.sky.vo.SetmealVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.annotations.Delete;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -31,8 +32,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin/setmeal")
 @Api(tags = "套餐相关接口")
+@Slf4j
 public class SetmealController {
-    @Autowired
+    @Resource
     private SetmealService setmealService;
 
     @PostMapping
@@ -53,20 +55,23 @@ public class SetmealController {
 
     /**
      * 批量删除套餐
-     * @param ids
-     * @return
+     * 如果前端发送过来的ids是单个id，那么就直接删除该套餐信息
+     * 前端如果传来的是批量删除的套餐信息，则进行批量删除
+     * 启售中的套餐不能被删除
+     * @param ids 套餐id
+     * @return 返回删除结果
      */
     @DeleteMapping
     @ApiOperation("批量删除套餐")
     @CacheEvict(cacheNames = "setmealCache",allEntries = true)
-    public Result delete(List<Long> ids){
+    public Result delete(@RequestParam List<Long> ids){
         setmealService.deleteBatch(ids);
         return Result.success();
     }
     /**
      * 修改套餐
-     * @param id
-     * @return
+     * @param id 套餐id
+     * @return 脱敏后的套餐信息
      */
     @GetMapping("/{id}")
     @ApiOperation("根据id查询套餐")
@@ -101,7 +106,6 @@ public class SetmealController {
         setmealService.startOrStop(status,id);
         return Result.success();
     }
-
 
 }
 

@@ -36,7 +36,7 @@ public interface SetmealDishMapper {
     void deleteBySetmealId(Long id);
 
     /**
-     * 根据套餐信息查询菜品信息
+     * 根据id删除套餐和菜品关联的关系
      * @param id
      * @return
      */

@@ -1,5 +1,6 @@
 package com.sky.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -21,6 +22,7 @@ import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
+import com.sky.websocket.WebSocketServer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.Request;
 import org.springframework.beans.BeanUtils;
@@ -29,10 +31,13 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -61,6 +66,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private WeChatPayUtil weChatPayUtil;
+
+    @Resource
+    private WebSocketServer webSocketServer;
 
     @Autowired
     private OrderDetailMapper orderDetailMapper;
@@ -162,10 +170,25 @@ public class OrderServiceImpl implements OrderService {
         log.info("调用updateStatus，用于替换微信支付更新数据库状态的问题");
         orderMapper.updateStatus(OrderStatus, OrderPaidStatus, check_out_time, orderNumber);
 
+        Map map = new HashMap();
+        map.put("type", 1);// 消息类型，1表示来单提醒
+        //获取订单id
+        Orders orders=orderMapper.getByNumberAndUserId(orderNumber, userId);
+        map.put("orderId", orders.getId());
+        map.put("content", "订单号：" + orderNumber);
+
+        // 通过WebSocket实现来单提醒，向客户端浏览器推送消息
+        webSocketServer.sendToAllClient(JSON.toJSONString(map));
+        log.info("来单提醒：{}", JSON.toJSONString(map));
+
 
         return vo;
     }
 
+    /**
+     * 支付成功后，更新订单状态
+     * @param outTradeNo 订单号
+     */
     @Override
     public void paySuccess(String outTradeNo) {
         // 当前登录用户id
@@ -185,6 +208,13 @@ public class OrderServiceImpl implements OrderService {
         // 更新数据库中的数据状态
         orderMapper.update(orders);
 
+        Map map = new HashMap<>();
+        map.put("type",1); // 消息类型，1表示来单提醒
+        map.put("orderId",ordersDB.getId()); // 订单id
+        map.put("content","订单号:" + outTradeNo);
+
+        // 通过WebSocket实现来单提醒，向客户端浏览器推送消息
+        webSocketServer.sendToAllClient(JSON.toJSONString(map));
     }
 
     /**
@@ -368,10 +398,14 @@ public class OrderServiceImpl implements OrderService {
      */
     @Override
     public void confirm(OrdersConfirmDTO ordersConfirmDTO) {
+        // 修改订单状态为已接单
         Orders orders = Orders.builder()
                 .id(ordersConfirmDTO.getId())
                 .status(Orders.CONFIRMED)
                 .build();
+
+        // 更新订单状态
+        orderMapper.update(orders);
     }
 
     /**
