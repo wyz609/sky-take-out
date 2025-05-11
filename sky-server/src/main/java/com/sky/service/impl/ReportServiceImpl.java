@@ -1,10 +1,12 @@
 package com.sky.service.impl;
 
+import com.sky.dto.GoodsSalesDTO;
 import com.sky.entity.Orders;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
 import com.sky.vo.OrderReportVO;
+import com.sky.vo.SalesTop10ReportVO;
 import com.sky.vo.TurnoverReportVO;
 import com.sky.vo.UserReportVO;
 import org.apache.commons.lang.StringUtils;
@@ -19,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Class name: ReportService
@@ -176,6 +179,41 @@ public UserReportVO getUserStatistics(LocalDate begin, LocalDate end) {
                 .build();
     }
 
+    /**
+     * 查询指定时间区间内的销量排名前10的商品
+     * 该方法通过调用orderMapper中的getSalesTop10方法获取指定时间区间内销量排名前10的商品信息，
+     * 并将其格式化为一个包含商品名称和销售数量的字符串列表
+     *
+     * @param begin 开始时间
+     * @param end 结束时间
+     * @return 返回销量排名前10的商品
+     */
+    @Override
+    public SalesTop10ReportVO getSalesTop10(LocalDate begin, LocalDate end) {
+        // 将开始时间和结束时间转换为时间区间的开始和结束，以便后续查询
+        LocalDateTime beginTime = LocalDateTime.of(begin, LocalTime.MIN);
+        LocalDateTime endTime = LocalDateTime.of(end, LocalTime.MAX);
+
+        // 调用orderMapper的getSalesTop10方法获取销量排名前10的商品信息
+        List<GoodsSalesDTO> goodsSalesDTOList = orderMapper.getSalesTop10(beginTime, endTime);
+
+        // 将商品名称和销售数量分别格式化为逗号分隔的字符串
+        String nameList = StringUtils.join(goodsSalesDTOList.stream().map(GoodsSalesDTO::getName).collect(Collectors.toList()), ",");
+        String numberList = StringUtils.join(goodsSalesDTOList.stream().map(GoodsSalesDTO::getNumber).collect(Collectors.toList()), ",");
+
+        // 构建并返回包含商品名称和销售数量字符串的SalesTop10ReportVO对象
+        return SalesTop10ReportVO.builder()
+                .nameList(nameList)
+                .numberList(numberList)
+                .build();
+    }
+
+    /**
+     * 根据动态条件统计用户数量
+     * @param beginTime 开始时间
+     * @param endTime 结束时间
+     * @return 返回用户数量
+     */
     private Integer getOrderCount(LocalDateTime beginTime, LocalDateTime endTime, Integer status) {
         Map map = new HashMap();
         map.put("begin",beginTime);
