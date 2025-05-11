@@ -13,6 +13,7 @@ import org.apache.ibatis.annotations.Select;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface SetmealMapper {
@@ -76,4 +77,11 @@ public interface SetmealMapper {
      */
     @Delete("delete from setmeal_dish where setmeal_id = #{setmealId}")
     void deleteBySetmealId(Long setmealId);
+
+    /**
+     * 根据条件查询套餐数量
+     * @param map
+     * @return
+     */
+    Integer countByMap(Map map);
 }
